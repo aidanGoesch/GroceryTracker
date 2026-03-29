@@ -1,0 +1,384 @@
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.home-header {
+  margin-bottom: 2px;
+}
+
+.week-card {
+  background: var(--green-dark);
+  border-radius: 20px;
+  color: #fff;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.week-label {
+  margin: 0;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+
+.week-total {
+  margin: 8px 0;
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: 600;
+  color: #fff;
+}
+
+.delta-badge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.delta-badge.down {
+  background: rgba(100, 255, 180, 0.2);
+  color: #aff5d2;
+}
+
+.delta-badge.up {
+  background: rgba(255, 130, 120, 0.25);
+  color: #ffd2cc;
+}
+
+.week-muted {
+  margin: 6px 0 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+}
+
+.mini-chart {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.mini-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mini-bar {
+  width: 100%;
+  max-width: 22px;
+  border-radius: 8px 8px 4px 4px;
+  background: rgba(255, 255, 255, 0.2);
+  min-height: 6px;
+}
+
+.mini-bar.current {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mini-bar-wrap span {
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.category-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 12px 14px;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-name {
+  color: var(--text-secondary);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.category-total {
+  margin: 8px 0 10px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.category-progress {
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: #e8e4db;
+  overflow: hidden;
+}
+
+.category-progress span {
+  display: block;
+  height: 100%;
+}
+
+.receipt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receipt-row {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  text-align: left;
+}
+
+.receipt-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.store-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--green-bg);
+  color: var(--green-dark);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+}
+
+.store-name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.receipt-meta {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+}
+
+.receipt-total {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.drop-zone {
+  border: 2px dashed var(--green-mid);
+  border-radius: 20px;
+  width: 100%;
+  min-height: 220px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.upload-icon {
+  width: 34px;
+  height: 34px;
+  stroke: var(--green-dark);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.processing-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-thumb {
+  max-width: 120px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #dbe5df;
+  border-top-color: var(--green-dark);
+  animation: spin 1s linear infinite;
+}
+
+.inline-error {
+  margin: 0;
+  color: #9c2f2f;
+  text-align: center;
+}
+
+.review-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.review-image-wrap {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3efe6;
+}
+
+.review-image {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.review-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr auto;
+  gap: 8px;
+}
+
+.delete-line-item {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  min-width: 34px;
+}
+
+.review-total-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-total-wrap p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.review-total {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.detail-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-total {
+  margin: 4px 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+  font-size: 1rem;
+}
+
+.item-row,
+.item-list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-row:last-child,
+.item-list-row:last-child {
+  border-bottom: none;
+}
+
+.item-row p,
+.item-name {
+  margin: 0;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-badge {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--green-bg);
+  color: var(--green-dark);
+  padding: 4px 8px;
+  font-size: 0.74rem;
+}
+
+.item-meta {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.pill.active {
+  border-color: transparent;
+  background: var(--green-dark);
+  color: #fff;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
