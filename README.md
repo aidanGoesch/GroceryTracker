@@ -35,3 +35,15 @@ npm run dev
 ## Why Edge Function?
 
 Browsers cannot call Anthropic's API directly due to CORS and API key exposure. The app sends the image to a Supabase Edge Function (`parse-receipt`), which calls Claude server-side and returns parsed text safely.
+
+## Deploy to GitHub Pages
+
+This project is preconfigured for GitHub Pages on the `GroceryTracker` repository path.
+
+1. Push `main` to GitHub.
+2. In GitHub repo settings, go to **Pages** and set **Source** to **GitHub Actions**.
+3. The workflow in `.github/workflows/deploy-pages.yml` will build and deploy on each push to `main`.
+
+Published URL:
+
+`https://aidangoesch.github.io/GroceryTracker/`
