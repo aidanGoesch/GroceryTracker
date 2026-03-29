@@ -43,6 +43,9 @@ This project is preconfigured for GitHub Pages on the `GroceryTracker` repositor
 1. Push `main` to GitHub.
 2. In GitHub repo settings, go to **Pages** and set **Source** to **GitHub Actions**.
 3. The workflow in `.github/workflows/deploy-pages.yml` will build and deploy on each push to `main`.
+4. In **Repo Settings -> Secrets and variables -> Actions**, add:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
 
 Published URL:
 

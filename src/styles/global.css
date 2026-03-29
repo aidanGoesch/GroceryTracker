@@ -49,6 +49,20 @@ body {
   padding: 16px 16px 108px;
 }
 
+.auth-wrap {
+  min-height: calc(100vh - 32px);
+  display: grid;
+  place-items: center;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .page {
   display: flex;
   flex-direction: column;
