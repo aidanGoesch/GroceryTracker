@@ -222,6 +222,96 @@ input[type='number'],
   font-size: 0.92rem;
 }
 
+.grocery-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grocery-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.grocery-suggestion-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.grocery-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.16s ease;
+  touch-action: pan-y;
+}
+
+.grocery-row:last-child {
+  border-bottom: none;
+}
+
+.grocery-row-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.grocery-row-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+.swipe-hint {
+  font-size: 0.78rem;
+  text-transform: lowercase;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.swipe-hint-right {
+  color: var(--green-dark);
+}
+
+.swipe-hint-left {
+  color: #b73737;
+}
+
+.grocery-row.swipe-right {
+  box-shadow: -40px 0 0 rgba(45, 106, 79, 0.08);
+}
+
+.grocery-row.swipe-left {
+  box-shadow: 40px 0 0 rgba(183, 55, 55, 0.08);
+}
+
+.grocery-check-wrap {
+  display: grid;
+  place-items: center;
+}
+
+.grocery-name {
+  margin: 0;
+  text-transform: lowercase;
+}
+
+.grocery-name.checked {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.grocery-edit-input {
+  width: 100%;
+}
+
 @keyframes pulse {
   0% {
     background-position: 200% 0;

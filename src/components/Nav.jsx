@@ -30,11 +30,12 @@ function ListIcon() {
   )
 }
 
-function ProfileIcon() {
+function CartIcon() {
   return (
     <svg viewBox="0 0 24 24" className="nav-icon" aria-hidden="true">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+      <path d="M4 5h2l2 9h9l2-6H7.5" />
+      <circle cx="10" cy="18" r="1.6" />
+      <circle cx="17" cy="18" r="1.6" />
     </svg>
   )
 }
@@ -67,9 +68,9 @@ function Nav() {
         <ListIcon />
         <span>Items</span>
       </NavLink>
-      <NavLink to="/profile" className={navClass}>
-        <ProfileIcon />
-        <span>Profile</span>
+      <NavLink to="/grocery-list" className={navClass}>
+        <CartIcon />
+        <span>List</span>
       </NavLink>
     </nav>
   )

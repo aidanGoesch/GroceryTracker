@@ -1,9 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
+import { format, parseISO, startOfWeek } from 'date-fns'
 import ErrorBanner from '../components/ErrorBanner'
 import SkeletonBlock from '../components/SkeletonBlock'
 import { CATEGORIES } from '../constants'
 import { useLineItems } from '../hooks/useLineItems'
-import { formatDateLabel, formatCurrency } from '../utils'
+import { formatCurrency } from '../utils'
+
+function getItemDate(item) {
+  const source = item.receipts?.purchase_date || item.created_at
+  if (!source) return new Date(0)
+  try {
+    return parseISO(source)
+  } catch {
+    return new Date(source)
+  }
+}
 
 function Items() {
   const { items, loading, error, fetchAllItems } = useLineItems()
@@ -15,16 +26,33 @@ function Items() {
     fetchAllItems()
   }, [fetchAllItems])
 
-  const filtered = useMemo(() => {
+  const groupedByWeek = useMemo(() => {
     const lowered = search.trim().toLowerCase()
-    return items
+    const filtered = items
       .filter((item) => (lowered ? item.name.toLowerCase().includes(lowered) : true))
       .filter((item) => (selectedCategory === 'All' ? true : item.category === selectedCategory))
       .sort((a, b) => {
-        const aDate = new Date(a.receipts?.purchase_date || a.created_at).getTime()
-        const bDate = new Date(b.receipts?.purchase_date || b.created_at).getTime()
+        const aDate = getItemDate(a).getTime()
+        const bDate = getItemDate(b).getTime()
         return bDate - aDate
       })
+
+    const byWeek = new Map()
+    for (const item of filtered) {
+      const itemDate = getItemDate(item)
+      const weekStart = startOfWeek(itemDate, { weekStartsOn: 1 })
+      const weekKey = format(weekStart, 'yyyy-MM-dd')
+      if (!byWeek.has(weekKey)) {
+        byWeek.set(weekKey, {
+          key: weekKey,
+          label: `week of ${format(weekStart, 'MMM d').toLowerCase()}`,
+          items: [],
+        })
+      }
+      byWeek.get(weekKey).items.push(item)
+    }
+
+    return [...byWeek.values()].sort((a, b) => (a.key < b.key ? 1 : -1))
   }, [items, search, selectedCategory])
 
   return (
@@ -58,24 +86,28 @@ function Items() {
       {loading ? (
         <SkeletonBlock className="skeleton-list tall" />
       ) : (
-        <div className="panel item-list">
-          {filtered.map((item) => (
-            <div className="item-list-row" key={item.id}>
-              <div>
-                <p className="item-name">{item.name}</p>
-                <p className="item-meta">
-                  {item.receipts?.store_name || 'Unknown Store'} ·{' '}
-                  {formatDateLabel(item.receipts?.purchase_date || item.created_at, 'MMM d')}
-                </p>
-              </div>
-              <div className="item-actions">
-                <span className="category-badge">{item.category}</span>
-                <span className="item-price">{formatCurrency(item.price)}</span>
-              </div>
+        <>
+          {groupedByWeek.map((week) => (
+            <div className="panel item-list" key={week.key}>
+              <h2 className="section-title">{week.label}</h2>
+              {week.items.map((item) => (
+                <div className="item-list-row" key={item.id}>
+                  <div>
+                    <p className="item-name">{item.name}</p>
+                    <p className="item-meta">
+                      {item.receipts?.store_name || 'Unknown Store'} · {format(getItemDate(item), 'MMM d')}
+                    </p>
+                  </div>
+                  <div className="item-actions">
+                    <span className="category-badge">{item.category}</span>
+                    <span className="item-price">{formatCurrency(item.price)}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
-          {filtered.length === 0 && <p className="empty-note">No matching items.</p>}
-        </div>
+          {groupedByWeek.length === 0 && <p className="empty-note">No matching items.</p>}
+        </>
       )}
     </section>
   )

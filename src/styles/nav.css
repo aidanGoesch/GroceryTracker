@@ -12,7 +12,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: end;
-  gap: 6px;
+  gap: 4px;
 }
 
 .nav-item {

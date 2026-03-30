@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Receipts from './pages/Receipts'
 import Upload from './pages/Upload'
 import Items from './pages/Items'
+import GroceryList from './pages/GroceryList'
 import ReceiptDetail from './pages/ReceiptDetail'
 import Profile from './pages/Profile'
 import { isSupabaseConfigured, supabase } from './supabase'
@@ -105,6 +106,7 @@ function App() {
           <Route path="/receipts" element={<Receipts />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/items" element={<Items />} />
+          <Route path="/grocery-list" element={<GroceryList />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/receipts/:id" element={<ReceiptDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
