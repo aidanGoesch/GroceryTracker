@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FunctionsHttpError } from '@supabase/supabase-js'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, matchPath, useLocation } from 'react-router-dom'
 import Nav from './components/Nav'
 import Home from './pages/Home'
 import Receipts from './pages/Receipts'
@@ -12,8 +12,39 @@ import Profile from './pages/Profile'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 const AUTH_KEY = 'grocery_tracker_authed'
+const CACHED_TAB_ROUTES = [
+  { path: '/', Component: Home },
+  { path: '/receipts', Component: Receipts },
+  { path: '/upload', Component: Upload },
+  { path: '/items', Component: Items },
+  { path: '/grocery-list', Component: GroceryList },
+]
+
+function isCachedTabPath(pathname) {
+  return CACHED_TAB_ROUTES.some(({ path }) => matchPath({ path, end: true }, pathname))
+}
+
+function CachedTabViews({ pathname }) {
+  return (
+    <>
+      {CACHED_TAB_ROUTES.map((route) => {
+        const isActive = Boolean(matchPath({ path: route.path, end: true }, pathname))
+        return (
+          <div
+            key={route.path}
+            style={{ display: isActive ? 'block' : 'none' }}
+            aria-hidden={!isActive}
+          >
+            <route.Component />
+          </div>
+        )
+      })}
+    </>
+  )
+}
 
 function App() {
+  const location = useLocation()
   const [isAuthed, setIsAuthed] = useState(localStorage.getItem(AUTH_KEY) === 'true')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
@@ -101,16 +132,15 @@ function App() {
   return (
     <div className="app-shell">
       <main className="app-content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/receipts" element={<Receipts />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/items" element={<Items />} />
-          <Route path="/grocery-list" element={<GroceryList />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/receipts/:id" element={<ReceiptDetail />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        {isCachedTabPath(location.pathname) ? (
+          <CachedTabViews pathname={location.pathname} />
+        ) : (
+          <Routes>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/receipts/:id" element={<ReceiptDetail />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
       </main>
       <Nav />
     </div>

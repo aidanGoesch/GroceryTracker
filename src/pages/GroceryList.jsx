@@ -3,8 +3,8 @@ import ErrorBanner from '../components/ErrorBanner'
 import SkeletonBlock from '../components/SkeletonBlock'
 import { useGroceryList } from '../hooks/useGroceryList'
 
-const SWIPE_TRIGGER_PX = 72
-const MAX_SWIPE_PX = 110
+const SWIPE_TRIGGER_PX = 96
+const MAX_SWIPE_PX = 140
 
 function triggerHaptic(pattern = 12) {
   if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return
@@ -182,15 +182,6 @@ function GroceryList() {
           onPointerUp={endSwipe}
           onPointerCancel={endSwipe}
         >
-          <label className="grocery-check-wrap">
-            <input
-              type="checkbox"
-              checked={item.is_checked}
-              onChange={() => handleToggle(item)}
-              disabled={saving}
-            />
-          </label>
-
           {isEditing ? (
             <input
               type="text"

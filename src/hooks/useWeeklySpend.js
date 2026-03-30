@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { endOfWeek, format, parseISO, startOfWeek, subWeeks } from 'date-fns'
 import { supabase } from '../supabase'
 
+let weeklySpendCache = null
+
 function weekKey(date) {
   return format(startOfWeek(date, { weekStartsOn: 1 }), 'yyyy-MM-dd')
 }
@@ -9,13 +11,24 @@ function weekKey(date) {
 export function useWeeklySpend() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [currentWeek, setCurrentWeek] = useState({ total: 0, weekLabel: '' })
-  const [lastWeek, setLastWeek] = useState({ total: 0, weekLabel: '' })
-  const [delta, setDelta] = useState(0)
-  const [last8Weeks, setLast8Weeks] = useState([])
+  const [currentWeek, setCurrentWeek] = useState(
+    () => weeklySpendCache?.currentWeek || { total: 0, weekLabel: '' },
+  )
+  const [lastWeek, setLastWeek] = useState(
+    () => weeklySpendCache?.lastWeek || { total: 0, weekLabel: '' },
+  )
+  const [delta, setDelta] = useState(() => weeklySpendCache?.delta || 0)
+  const [last8Weeks, setLast8Weeks] = useState(() => weeklySpendCache?.last8Weeks || [])
 
   const fetchWeeklySpend = useCallback(async () => {
-    setLoading(true)
+    const hasCachedData = Boolean(weeklySpendCache)
+    if (hasCachedData) {
+      setCurrentWeek(weeklySpendCache.currentWeek)
+      setLastWeek(weeklySpendCache.lastWeek)
+      setDelta(weeklySpendCache.delta)
+      setLast8Weeks(weeklySpendCache.last8Weeks)
+    }
+    setLoading(!hasCachedData)
     setError('')
 
     const { data, error: queryError } = await supabase
@@ -63,17 +76,28 @@ export function useWeeklySpend() {
     const currentTotal = totalsByWeek[currentKey] || 0
     const previousTotal = totalsByWeek[previousKey] || 0
 
-    setCurrentWeek({
+    const nextCurrentWeek = {
       total: currentTotal,
       weekLabel: `week of ${format(currentWeekStart, 'MMM d').toLowerCase()}`,
       start: currentWeekStart,
       end: currentWeekEnd,
-    })
-    setLastWeek({
+    }
+    const nextLastWeek = {
       total: previousTotal,
       weekLabel: `week of ${format(subWeeks(currentWeekStart, 1), 'MMM d').toLowerCase()}`,
-    })
-    setDelta(currentTotal - previousTotal)
+    }
+    const nextDelta = currentTotal - previousTotal
+
+    weeklySpendCache = {
+      currentWeek: nextCurrentWeek,
+      lastWeek: nextLastWeek,
+      delta: nextDelta,
+      last8Weeks: series,
+    }
+
+    setCurrentWeek(nextCurrentWeek)
+    setLastWeek(nextLastWeek)
+    setDelta(nextDelta)
     setLast8Weeks(series)
     setLoading(false)
   }, [])

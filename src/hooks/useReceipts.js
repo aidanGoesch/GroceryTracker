@@ -1,13 +1,19 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '../supabase'
 
+let receiptsCache = []
+
 export function useReceipts() {
-  const [receipts, setReceipts] = useState([])
+  const [receipts, setReceipts] = useState(() => receiptsCache)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const fetchReceipts = useCallback(async () => {
-    setLoading(true)
+    const hasCachedData = receiptsCache.length > 0
+    if (hasCachedData) {
+      setReceipts(receiptsCache)
+    }
+    setLoading(!hasCachedData)
     setError('')
     const { data, error: queryError } = await supabase
       .from('receipts')
@@ -26,6 +32,7 @@ export function useReceipts() {
       item_count: receipt.line_items?.[0]?.count || 0,
     }))
 
+    receiptsCache = normalized
     setReceipts(normalized)
     setLoading(false)
   }, [])
@@ -68,7 +75,11 @@ export function useReceipts() {
       setError(deleteError.message)
       throw deleteError
     }
-    setReceipts((current) => current.filter((receipt) => receipt.id !== id))
+    setReceipts((current) => {
+      const next = current.filter((receipt) => receipt.id !== id)
+      receiptsCache = next
+      return next
+    })
   }, [])
 
   return {

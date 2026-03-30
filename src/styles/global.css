@@ -242,7 +242,7 @@ input[type='number'],
 
 .grocery-row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
   padding: 8px 0;
@@ -269,6 +269,7 @@ input[type='number'],
   align-items: center;
   padding: 0 12px;
   pointer-events: none;
+  background: linear-gradient(90deg, rgba(28, 92, 67, 0.34) 0%, rgba(28, 92, 67, 0.34) 50%, rgba(133, 30, 30, 0.34) 50%, rgba(133, 30, 30, 0.34) 100%);
 }
 
 .swipe-hint {
@@ -278,24 +279,19 @@ input[type='number'],
 }
 
 .swipe-hint-right {
-  color: var(--green-dark);
+  color: #124530;
 }
 
 .swipe-hint-left {
-  color: #b73737;
+  color: #6b1616;
 }
 
 .grocery-row.swipe-right {
-  box-shadow: -40px 0 0 rgba(45, 106, 79, 0.08);
+  box-shadow: -56px 0 0 rgba(28, 92, 67, 0.32);
 }
 
 .grocery-row.swipe-left {
-  box-shadow: 40px 0 0 rgba(183, 55, 55, 0.08);
-}
-
-.grocery-check-wrap {
-  display: grid;
-  place-items: center;
+  box-shadow: 56px 0 0 rgba(133, 30, 30, 0.32);
 }
 
 .grocery-name {

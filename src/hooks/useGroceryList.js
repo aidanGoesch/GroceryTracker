@@ -1,18 +1,24 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '../supabase'
 
+let groceryItemsCache = []
+
 function normalizeItemName(name) {
   return name.trim().replace(/\s+/g, ' ')
 }
 
 export function useGroceryList() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(() => groceryItemsCache)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   const fetchItems = useCallback(async () => {
-    setLoading(true)
+    const hasCachedData = groceryItemsCache.length > 0
+    if (hasCachedData) {
+      setItems(groceryItemsCache)
+    }
+    setLoading(!hasCachedData)
     setError('')
 
     const { data, error: queryError } = await supabase
@@ -27,7 +33,9 @@ export function useGroceryList() {
       return
     }
 
-    setItems(data || [])
+    const next = data || []
+    groceryItemsCache = next
+    setItems(next)
     setLoading(false)
   }, [])
 
@@ -43,7 +51,11 @@ export function useGroceryList() {
       updated_at: new Date().toISOString(),
     }
 
-    setItems((current) => [...current, optimisticItem])
+    setItems((current) => {
+      const next = [...current, optimisticItem]
+      groceryItemsCache = next
+      return next
+    })
     setSaving(true)
     setError('')
 
@@ -54,15 +66,21 @@ export function useGroceryList() {
       .single()
 
     if (insertError) {
-      setItems((current) => current.filter((item) => item.id !== optimisticItem.id))
+      setItems((current) => {
+        const next = current.filter((item) => item.id !== optimisticItem.id)
+        groceryItemsCache = next
+        return next
+      })
       setError(insertError.message)
       setSaving(false)
       throw insertError
     }
 
-    setItems((current) =>
-      current.map((item) => (item.id === optimisticItem.id ? data : item)),
-    )
+    setItems((current) => {
+      const next = current.map((item) => (item.id === optimisticItem.id ? data : item))
+      groceryItemsCache = next
+      return next
+    })
     setSaving(false)
     return data
   }, [])
@@ -87,7 +105,11 @@ export function useGroceryList() {
       throw updateError
     }
 
-    setItems((current) => current.map((item) => (item.id === id ? data : item)))
+    setItems((current) => {
+      const next = current.map((item) => (item.id === id ? data : item))
+      groceryItemsCache = next
+      return next
+    })
     setSaving(false)
     return data
   }, [])
@@ -111,10 +133,12 @@ export function useGroceryList() {
 
     setItems((current) => {
       const next = current.map((item) => (item.id === id ? data : item))
-      return next.sort((a, b) => {
+      const sorted = next.sort((a, b) => {
         if (a.is_checked !== b.is_checked) return Number(a.is_checked) - Number(b.is_checked)
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       })
+      groceryItemsCache = sorted
+      return sorted
     })
     setSaving(false)
     return data
@@ -131,7 +155,11 @@ export function useGroceryList() {
       throw deleteError
     }
 
-    setItems((current) => current.filter((item) => item.id !== id))
+    setItems((current) => {
+      const next = current.filter((item) => item.id !== id)
+      groceryItemsCache = next
+      return next
+    })
     setSaving(false)
   }, [])
 

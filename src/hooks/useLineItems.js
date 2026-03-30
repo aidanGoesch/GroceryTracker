@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '../supabase'
 
+let allItemsCache = []
+const receiptItemsCache = new Map()
+
 export function useLineItems() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
@@ -8,7 +11,12 @@ export function useLineItems() {
 
   const fetchItemsForReceipt = useCallback(async (receiptId) => {
     if (!receiptId) return
-    setLoading(true)
+    const cachedForReceipt = receiptItemsCache.get(receiptId) || []
+    const hasCachedData = cachedForReceipt.length > 0
+    if (hasCachedData) {
+      setItems(cachedForReceipt)
+    }
+    setLoading(!hasCachedData)
     setError('')
 
     const { data, error: queryError } = await supabase
@@ -23,12 +31,18 @@ export function useLineItems() {
       return
     }
 
-    setItems(data || [])
+    const next = data || []
+    receiptItemsCache.set(receiptId, next)
+    setItems(next)
     setLoading(false)
   }, [])
 
   const fetchAllItems = useCallback(async () => {
-    setLoading(true)
+    const hasCachedData = allItemsCache.length > 0
+    if (hasCachedData) {
+      setItems(allItemsCache)
+    }
+    setLoading(!hasCachedData)
     setError('')
     const { data, error: queryError } = await supabase
       .from('line_items')
@@ -41,7 +55,9 @@ export function useLineItems() {
       return
     }
 
-    setItems(data || [])
+    const next = data || []
+    allItemsCache = next
+    setItems(next)
     setLoading(false)
   }, [])
 
@@ -57,9 +73,14 @@ export function useLineItems() {
       throw updateError
     }
 
-    setItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, category } : item)),
-    )
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, category } : item)))
+    allItemsCache = allItemsCache.map((item) => (item.id === id ? { ...item, category } : item))
+    for (const [receiptId, cachedItems] of receiptItemsCache.entries()) {
+      receiptItemsCache.set(
+        receiptId,
+        cachedItems.map((item) => (item.id === id ? { ...item, category } : item)),
+      )
+    }
   }, [])
 
   const deleteItem = useCallback(async (id) => {
@@ -70,6 +91,13 @@ export function useLineItems() {
       throw deleteError
     }
     setItems((current) => current.filter((item) => item.id !== id))
+    allItemsCache = allItemsCache.filter((item) => item.id !== id)
+    for (const [receiptId, cachedItems] of receiptItemsCache.entries()) {
+      receiptItemsCache.set(
+        receiptId,
+        cachedItems.filter((item) => item.id !== id),
+      )
+    }
   }, [])
 
   return {
