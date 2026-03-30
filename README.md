@@ -23,7 +23,9 @@ npm install
 supabase login
 supabase link --project-ref <YOUR_PROJECT_REF>
 supabase secrets set ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_KEY>
+supabase secrets set APP_PASSWORD=<YOUR_STRONG_APP_PASSWORD>
 supabase functions deploy parse-receipt
+supabase functions deploy check-app-password
 ```
 
 5. Run the app:
@@ -35,6 +37,12 @@ npm run dev
 ## Why Edge Function?
 
 Browsers cannot call Anthropic's API directly due to CORS and API key exposure. The app sends the image to a Supabase Edge Function (`parse-receipt`), which calls Claude server-side and returns parsed text safely.
+
+## App Access Protection
+
+App access uses a server-validated password gate via Supabase Edge Function (`check-app-password`).
+The password itself is stored only as a Supabase secret (`APP_PASSWORD`), not in frontend code.
+After successful unlock, a local auth flag is saved so you only enter it once per device/browser until you lock the app.
 
 ## Deploy to GitHub Pages
 

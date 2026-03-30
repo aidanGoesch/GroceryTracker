@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Nav from './components/Nav'
 import Home from './pages/Home'
@@ -7,50 +8,60 @@ import Upload from './pages/Upload'
 import Items from './pages/Items'
 import ReceiptDetail from './pages/ReceiptDetail'
 import Profile from './pages/Profile'
+import { isSupabaseConfigured, supabase } from './supabase'
 
-const PASSWORD_KEY = 'grocery_tracker_password'
 const AUTH_KEY = 'grocery_tracker_authed'
 
 function App() {
-  const hasPassword = useMemo(() => Boolean(localStorage.getItem(PASSWORD_KEY)), [])
-  const [isAuthed, setIsAuthed] = useState(
-    hasPassword && localStorage.getItem(AUTH_KEY) === 'true',
-  )
-  const [mode, setMode] = useState(hasPassword ? 'login' : 'setup')
+  const [isAuthed, setIsAuthed] = useState(localStorage.getItem(AUTH_KEY) === 'true')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [authError, setAuthError] = useState('')
+  const [unlocking, setUnlocking] = useState(false)
 
-  function completeAuth() {
-    setIsAuthed(true)
-    localStorage.setItem(AUTH_KEY, 'true')
+  async function handleUnlock() {
+    if (!isSupabaseConfigured) {
+      setAuthError(
+        'Supabase config missing. For local dev, restart after setting .env. For GitHub Pages, add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY as Actions secrets and redeploy.',
+      )
+      return
+    }
+
+    const normalizedPassword = password.trim()
+    if (!normalizedPassword) {
+      setAuthError('Enter your password.')
+      return
+    }
+
+    setUnlocking(true)
     setAuthError('')
-  }
+    try {
+      const { data, error } = await supabase.functions.invoke('check-app-password', {
+        body: { password: normalizedPassword },
+      })
 
-  function handleSetupPassword() {
-    if (!password || password.length < 4) {
-      setAuthError('Use a password with at least 4 characters.')
-      return
-    }
-    if (password !== confirmPassword) {
-      setAuthError('Passwords do not match.')
-      return
-    }
-    localStorage.setItem(PASSWORD_KEY, password)
-    completeAuth()
-  }
+      if (error) {
+        if (error instanceof FunctionsHttpError) {
+          const details = await error.context.json().catch(() => ({}))
+          setAuthError(details?.error || `Password check failed (HTTP ${error.context.status}).`)
+        } else {
+          setAuthError(error.message || 'Password check failed.')
+        }
+        return
+      }
 
-  function handleLogin() {
-    const savedPassword = localStorage.getItem(PASSWORD_KEY)
-    if (!savedPassword) {
-      setMode('setup')
-      return
+      if (!data?.valid) {
+        setAuthError('Incorrect password.')
+        return
+      }
+
+      localStorage.setItem(AUTH_KEY, 'true')
+      setIsAuthed(true)
+      setPassword('')
+    } catch {
+      setAuthError('Unable to verify password right now.')
+    } finally {
+      setUnlocking(false)
     }
-    if (password !== savedPassword) {
-      setAuthError('Incorrect password.')
-      return
-    }
-    completeAuth()
   }
 
   if (!isAuthed) {
@@ -59,11 +70,7 @@ function App() {
         <main className="app-content auth-wrap">
           <section className="panel auth-panel">
             <h1 className="page-title">grocery tracker</h1>
-            <p className="empty-note">
-              {mode === 'setup'
-                ? 'Set a local password for this browser.'
-                : 'Enter your password to unlock.'}
-            </p>
+            <p className="empty-note">Enter your app password to unlock.</p>
 
             <label className="field">
               <span>Password</span>
@@ -74,25 +81,15 @@ function App() {
               />
             </label>
 
-            {mode === 'setup' && (
-              <label className="field">
-                <span>Confirm password</span>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                />
-              </label>
-            )}
-
             {authError && <p className="inline-error">{authError}</p>}
 
             <button
               type="button"
               className="primary-button"
-              onClick={mode === 'setup' ? handleSetupPassword : handleLogin}
+              disabled={unlocking}
+              onClick={handleUnlock}
             >
-              {mode === 'setup' ? 'save password' : 'unlock'}
+              {unlocking ? 'unlocking...' : 'unlock'}
             </button>
           </section>
         </main>
