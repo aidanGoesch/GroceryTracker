@@ -1,21 +1,21 @@
 import { useMemo, useRef, useState } from 'react'
-import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import ReviewScreen from '../components/ReviewScreen'
-import { parseReceiptWithClaude } from '../claude'
+import { isTokenLimitError, parseReceiptWithClaude } from '../claude'
 import { useReceipts } from '../hooks/useReceipts'
 import { supabase } from '../supabase'
 import { centsToDollars, toCents } from '../utils'
 
 const emptyReviewForm = () => ({
   store_name: '',
-  purchase_date: format(new Date(), 'yyyy-MM-dd'),
+  purchase_date: '',
   subtotal: '0',
   items: [],
 })
 
 function Upload() {
-  const inputRef = useRef(null)
+  const libraryInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
   const navigate = useNavigate()
   const { createReceipt } = useReceipts()
 
@@ -35,6 +35,8 @@ function Upload() {
   )
   const subtotal = centsToDollars(toCents(reviewForm.subtotal))
   const isBalanced = toCents(reviewForm.subtotal) > 0 && toCents(reviewForm.subtotal) === toCents(total)
+  const hasPurchaseDate = Boolean(reviewForm.purchase_date)
+  const canSaveReceipt = isBalanced && hasPurchaseDate
 
   async function processFile(file) {
     if (!file) return
@@ -53,14 +55,20 @@ function Upload() {
       }))
       setReviewForm({
         store_name: parsed.store_name,
-        purchase_date: parsed.purchase_date,
+        purchase_date: parsed.purchase_date || '',
         subtotal: String(parsed.subtotal ?? 0),
         items: mappedItems,
       })
       setError(parsed.validationError || '')
       setStatus('review')
     } catch (processingError) {
-      setError(processingError.message || 'Failed to parse receipt.')
+      const message = processingError.message || 'Failed to parse receipt.'
+      setError(message)
+      if (isTokenLimitError(message)) {
+        window.alert(
+          'We could not read this receipt because the AI token/credit limit has been reached. Please try again later after credits reset.',
+        )
+      }
       setStatus('error')
     }
   }
@@ -113,6 +121,11 @@ function Upload() {
   }
 
   async function saveReceipt() {
+    if (!hasPurchaseDate) {
+      setError('Please choose the purchase date shown on your receipt before saving.')
+      return
+    }
+
     if (!isBalanced) {
       setError('Subtotal must match the sum of all item prices before saving.')
       return
@@ -135,7 +148,7 @@ function Upload() {
       const receipt = await createReceipt(
         {
           store_name: reviewForm.store_name || 'Unknown Store',
-          purchase_date: reviewForm.purchase_date || format(new Date(), 'yyyy-MM-dd'),
+          purchase_date: reviewForm.purchase_date,
           total: subtotal,
           image_url: imageUrl || null,
         },
@@ -165,23 +178,39 @@ function Upload() {
           <button
             type="button"
             className="drop-zone"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => libraryInputRef.current?.click()}
             onDragOver={(event) => event.preventDefault()}
             onDrop={handleDrop}
           >
             <svg viewBox="0 0 24 24" className="upload-icon" aria-hidden="true">
               <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
             </svg>
-            <span>drop a receipt or tap to upload</span>
+            <span>drop a receipt or choose from camera roll</span>
           </button>
           <input
-            ref={inputRef}
+            ref={libraryInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => {
+              processFile(event.target.files?.[0])
+              event.target.value = ''
+            }}
+          />
+          <input
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
             hidden
-            onChange={(event) => processFile(event.target.files?.[0])}
+            onChange={(event) => {
+              processFile(event.target.files?.[0])
+              event.target.value = ''
+            }}
           />
+          <button type="button" className="text-button" onClick={() => cameraInputRef.current?.click()}>
+            take a photo
+          </button>
           <button type="button" className="text-button" onClick={handleManualEntry}>
             enter manually
           </button>
@@ -218,7 +247,9 @@ function Upload() {
           onSave={saveReceipt}
           onCancel={() => navigate('/')}
           saving={saving}
-          canSave={isBalanced}
+          canSave={canSaveReceipt}
+          subtotalBalanced={isBalanced}
+          missingPurchaseDate={!hasPurchaseDate}
           computedTotal={total}
           computedSubtotal={subtotal}
           imagePreviewUrl={parsedPreview}

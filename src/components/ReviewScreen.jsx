@@ -11,6 +11,8 @@ function ReviewScreen({
   onCancel,
   saving,
   canSave,
+  subtotalBalanced,
+  missingPurchaseDate,
   computedTotal,
   computedSubtotal,
   imagePreviewUrl,
@@ -108,12 +110,15 @@ function ReviewScreen({
         <p>Subtotal target</p>
         <strong className="review-total">{formatCurrency(subtotal)}</strong>
       </div>
-      {!canSave && (
+      {!subtotalBalanced && (
         <p className="inline-error">
           Subtotal and line item sum must match before saving (
           {deltaCents > 0 ? '+' : deltaCents < 0 ? '-' : ''}
           {formatCurrency(Math.abs(deltaCents) / 100)} difference).
         </p>
+      )}
+      {missingPurchaseDate && (
+        <p className="inline-error">Receipt date is required. Please choose the date shown on your receipt.</p>
       )}
 
       <button type="button" className="primary-button" disabled={saving || !canSave} onClick={onSave}>
