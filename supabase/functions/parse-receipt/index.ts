@@ -23,7 +23,7 @@ Return this exact structure:
 
 Rules:
 - Assign each item the most accurate category from the list above
-- If you cannot read the date, use today's date
+- If you cannot confidently read the date, return an empty string for purchase_date
 - If you cannot read the store name, use "Unknown Store"
 - If you cannot confidently read subtotal, return 0 for subtotal
 - Do not include tax, subtotal, or total as line items

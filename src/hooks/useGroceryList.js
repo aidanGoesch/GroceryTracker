@@ -1,10 +1,16 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 
 let groceryItemsCache = []
+const groceryCacheListeners = new Set()
 
 function normalizeItemName(name) {
   return name.trim().replace(/\s+/g, ' ')
+}
+
+function setGroceryItemsCache(nextItems) {
+  groceryItemsCache = nextItems
+  groceryCacheListeners.forEach((listener) => listener(nextItems))
 }
 
 export function useGroceryList() {
@@ -12,6 +18,13 @@ export function useGroceryList() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    groceryCacheListeners.add(setItems)
+    return () => {
+      groceryCacheListeners.delete(setItems)
+    }
+  }, [])
 
   const fetchItems = useCallback(async () => {
     const hasCachedData = groceryItemsCache.length > 0
@@ -34,8 +47,7 @@ export function useGroceryList() {
     }
 
     const next = data || []
-    groceryItemsCache = next
-    setItems(next)
+    setGroceryItemsCache(next)
     setLoading(false)
   }, [])
 
@@ -53,7 +65,7 @@ export function useGroceryList() {
 
     setItems((current) => {
       const next = [...current, optimisticItem]
-      groceryItemsCache = next
+      setGroceryItemsCache(next)
       return next
     })
     setSaving(true)
@@ -68,7 +80,7 @@ export function useGroceryList() {
     if (insertError) {
       setItems((current) => {
         const next = current.filter((item) => item.id !== optimisticItem.id)
-        groceryItemsCache = next
+        setGroceryItemsCache(next)
         return next
       })
       setError(insertError.message)
@@ -78,7 +90,7 @@ export function useGroceryList() {
 
     setItems((current) => {
       const next = current.map((item) => (item.id === optimisticItem.id ? data : item))
-      groceryItemsCache = next
+      setGroceryItemsCache(next)
       return next
     })
     setSaving(false)
@@ -107,7 +119,7 @@ export function useGroceryList() {
 
     setItems((current) => {
       const next = current.map((item) => (item.id === id ? data : item))
-      groceryItemsCache = next
+      setGroceryItemsCache(next)
       return next
     })
     setSaving(false)
@@ -137,7 +149,7 @@ export function useGroceryList() {
         if (a.is_checked !== b.is_checked) return Number(a.is_checked) - Number(b.is_checked)
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       })
-      groceryItemsCache = sorted
+      setGroceryItemsCache(sorted)
       return sorted
     })
     setSaving(false)
@@ -157,7 +169,7 @@ export function useGroceryList() {
 
     setItems((current) => {
       const next = current.filter((item) => item.id !== id)
-      groceryItemsCache = next
+      setGroceryItemsCache(next)
       return next
     })
     setSaving(false)

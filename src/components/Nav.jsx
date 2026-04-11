@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 function HomeIcon() {
   return (
@@ -48,8 +49,43 @@ function PlusIcon() {
   )
 }
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="fab-action-icon" aria-hidden="true">
+      <path d="M4 8h3l1.2-2h7.6L17 8h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" />
+      <circle cx="12" cy="14" r="3.2" />
+    </svg>
+  )
+}
+
+function AddListIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="fab-action-icon" aria-hidden="true">
+      <path d="M7 7h8M7 12h8M7 17h6M18 16v6M15 19h6" />
+    </svg>
+  )
+}
+
 function Nav() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [fabOpenPath, setFabOpenPath] = useState('')
   const navClass = ({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')
+  const isFabOpen = fabOpenPath === location.pathname
+
+  function toggleFab() {
+    setFabOpenPath((current) => (current === location.pathname ? '' : location.pathname))
+  }
+
+  function handleUploadAction() {
+    setFabOpenPath('')
+    navigate('/upload')
+  }
+
+  function handleGroceryAction() {
+    setFabOpenPath('')
+    navigate('/grocery-list', { state: { focusAdd: true } })
+  }
 
   return (
     <nav className="bottom-nav" aria-label="Primary">
@@ -61,9 +97,35 @@ function Nav() {
         <ReceiptIcon />
         <span>Receipts</span>
       </NavLink>
-      <NavLink to="/upload" className="fab-link" aria-label="Upload receipt">
-        <PlusIcon />
-      </NavLink>
+      <div className={isFabOpen ? 'fab-menu is-open' : 'fab-menu'}>
+        <button
+          type="button"
+          className="fab-link"
+          aria-label={isFabOpen ? 'Close quick actions' : 'Open quick actions'}
+          aria-expanded={isFabOpen}
+          onClick={toggleFab}
+        >
+          <PlusIcon />
+        </button>
+        <button
+          type="button"
+          className={isFabOpen ? 'fab-action fab-action-upload is-open' : 'fab-action fab-action-upload'}
+          aria-label="Take picture to upload receipt"
+          onClick={handleUploadAction}
+          tabIndex={isFabOpen ? 0 : -1}
+        >
+          <CameraIcon />
+        </button>
+        <button
+          type="button"
+          className={isFabOpen ? 'fab-action fab-action-grocery is-open' : 'fab-action fab-action-grocery'}
+          aria-label="Add to grocery list"
+          onClick={handleGroceryAction}
+          tabIndex={isFabOpen ? 0 : -1}
+        >
+          <AddListIcon />
+        </button>
+      </div>
       <NavLink to="/items" className={navClass}>
         <ListIcon />
         <span>Items</span>

@@ -50,7 +50,8 @@ function App() {
   const [authError, setAuthError] = useState('')
   const [unlocking, setUnlocking] = useState(false)
 
-  async function handleUnlock() {
+  async function handleUnlock(event) {
+    event?.preventDefault()
     if (!isSupabaseConfigured) {
       setAuthError(
         'Supabase config missing. For local dev, restart after setting .env. For GitHub Pages, add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY as Actions secrets and redeploy.',
@@ -89,8 +90,12 @@ function App() {
       localStorage.setItem(AUTH_KEY, 'true')
       setIsAuthed(true)
       setPassword('')
-    } catch {
-      setAuthError('Unable to verify password right now.')
+    } catch (unlockError) {
+      setAuthError(
+        unlockError instanceof Error && unlockError.message
+          ? unlockError.message
+          : 'Unable to verify password right now.',
+      )
     } finally {
       setUnlocking(false)
     }
@@ -104,25 +109,22 @@ function App() {
             <h1 className="page-title">grocery tracker</h1>
             <p className="empty-note">Enter your app password to unlock.</p>
 
-            <label className="field">
-              <span>Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
+            <form onSubmit={handleUnlock}>
+              <label className="field">
+                <span>Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
 
-            {authError && <p className="inline-error">{authError}</p>}
+              {authError && <p className="inline-error">{authError}</p>}
 
-            <button
-              type="button"
-              className="primary-button"
-              disabled={unlocking}
-              onClick={handleUnlock}
-            >
-              {unlocking ? 'unlocking...' : 'unlock'}
-            </button>
+              <button type="submit" className="primary-button" disabled={unlocking}>
+                {unlocking ? 'unlocking...' : 'unlock'}
+              </button>
+            </form>
           </section>
         </main>
       </div>

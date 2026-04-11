@@ -1,8 +1,10 @@
-import { format } from 'date-fns'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { CATEGORIES } from './constants'
 import { supabase } from './supabase'
 import { centsToDollars, toCents } from './utils'
+
+const tokenLimitErrorPattern =
+  /(credit balance|insufficient credits?|insufficient quota|quota exceeded|rate.?limit|too many requests|tokens? exceeded|billing|usage limit|429)/i
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -27,7 +29,6 @@ function extractJson(text) {
 }
 
 function normalizeResponse(parsed) {
-  const today = format(new Date(), 'yyyy-MM-dd')
   const safeItems = Array.isArray(parsed.items) ? parsed.items : []
   const subtotalCents = toCents(parsed.subtotal)
 
@@ -60,15 +61,18 @@ function normalizeResponse(parsed) {
 
   return {
     store_name: String(parsed.store_name || 'Unknown Store').trim() || 'Unknown Store',
-    purchase_date: /^\d{4}-\d{2}-\d{2}$/.test(parsed.purchase_date || '')
-      ? parsed.purchase_date
-      : today,
+    purchase_date: /^\d{4}-\d{2}-\d{2}$/.test(parsed.purchase_date || '') ? parsed.purchase_date : '',
     items: normalizedItems,
     subtotal: centsToDollars(subtotalCents),
     total: centsToDollars(totalCents),
     canSave: isBalanced,
     validationError,
   }
+}
+
+export function isTokenLimitError(message) {
+  if (!message) return false
+  return tokenLimitErrorPattern.test(String(message))
 }
 
 export async function parseReceiptWithClaude(file) {
@@ -82,12 +86,19 @@ export async function parseReceiptWithClaude(file) {
 
   if (error) {
     if (error instanceof FunctionsHttpError) {
+      let details
       try {
-        const details = await error.context.json()
-        throw new Error(details?.error || `Edge Function HTTP ${error.context.status}`)
+        details = await error.context.json()
       } catch {
         throw new Error(`Edge Function HTTP ${error.context.status}`)
       }
+      const rawMessage = details?.error || `Edge Function HTTP ${error.context.status}`
+      if (isTokenLimitError(rawMessage)) {
+        throw new Error(
+          'Receipt parsing is temporarily unavailable because the AI token/credit limit has been reached.',
+        )
+      }
+      throw new Error(rawMessage)
     }
     throw new Error(error.message || 'Failed to parse receipt.')
   }

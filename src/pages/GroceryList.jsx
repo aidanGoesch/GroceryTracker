@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import ErrorBanner from '../components/ErrorBanner'
 import SkeletonBlock from '../components/SkeletonBlock'
 import { useGroceryList } from '../hooks/useGroceryList'
@@ -12,6 +13,7 @@ function triggerHaptic(pattern = 12) {
 }
 
 function GroceryList() {
+  const location = useLocation()
   const {
     items,
     loading,
@@ -33,10 +35,19 @@ function GroceryList() {
   const [swipeId, setSwipeId] = useState('')
   const [swipeX, setSwipeX] = useState(0)
   const [swipeStartX, setSwipeStartX] = useState(0)
+  const addInputRef = useRef(null)
 
   useEffect(() => {
     fetchItems()
   }, [fetchItems])
+
+  useEffect(() => {
+    if (!location.state?.focusAdd) return
+    const timer = setTimeout(() => {
+      addInputRef.current?.focus()
+    }, 20)
+    return () => clearTimeout(timer)
+  }, [location.state])
 
   const itemNameSet = useMemo(
     () => new Set(items.map((item) => item.name.trim().toLowerCase())),
@@ -240,6 +251,7 @@ function GroceryList() {
       >
         <div className="grocery-add-row">
           <input
+            ref={addInputRef}
             type="text"
             value={draftName}
             onChange={(event) => setDraftName(event.target.value)}

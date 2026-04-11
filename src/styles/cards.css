@@ -9,6 +9,142 @@
   margin-bottom: 2px;
 }
 
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.section-link {
+  color: var(--green-dark);
+  text-decoration: none;
+  font-size: 0.82rem;
+  text-transform: lowercase;
+}
+
+.home-grocery-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-grocery-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition:
+    background-color 0.22s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+.home-grocery-row:last-child {
+  border-bottom: none;
+}
+
+.home-grocery-checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--green-dark);
+  transform-origin: center;
+}
+
+.home-grocery-name {
+  text-transform: lowercase;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.home-grocery-name.checked {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  animation: homeStrikeIn 0.24s ease;
+}
+
+.home-grocery-row.checked {
+  animation: homeRowCheckFlash 0.28s ease;
+}
+
+.home-grocery-row.is-deleting {
+  animation: homeDeletePending var(--home-delete-ms, 1200ms) ease forwards;
+}
+
+.home-grocery-checkbox:checked {
+  animation: homeCheckboxPop 0.24s ease;
+}
+
+@keyframes homeCheckboxPop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.24);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes homeStrikeIn {
+  0% {
+    opacity: 0.7;
+    transform: translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homeRowCheckFlash {
+  0% {
+    background-color: transparent;
+  }
+  45% {
+    background-color: rgba(82, 183, 136, 0.14);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes homeDeletePending {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    background-color: transparent;
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(0) scale(0.99);
+    background-color: rgba(82, 183, 136, 0.15);
+  }
+  100% {
+    opacity: 0.45;
+    transform: translateX(10px) scale(0.985);
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-grocery-row,
+  .home-grocery-name,
+  .home-grocery-name.checked,
+  .home-grocery-checkbox:checked,
+  .home-grocery-row.is-deleting {
+    animation: none;
+    transition: none;
+  }
+}
+
 .week-card {
   background: var(--green-dark);
   border-radius: 20px;
