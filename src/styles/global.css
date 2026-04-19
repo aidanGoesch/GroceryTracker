@@ -33,12 +33,14 @@ body {
   color: var(--text-primary);
   font-family: 'Syne', sans-serif;
   font-size: 16px;
+  -webkit-text-size-adjust: 100%;
 }
 
 .app-shell {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--page-bg);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
@@ -51,6 +53,7 @@ body {
 
 .auth-wrap {
   min-height: calc(100vh - 32px);
+  min-height: calc(100dvh - 32px);
   display: grid;
   place-items: center;
 }
@@ -118,14 +121,15 @@ body {
 
 .search-input,
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
   padding: 10px 12px;
   font-family: 'Syne', sans-serif;
-  font-size: 0.95rem;
+  font-size: 16px;
 }
 
 input[type='number'],

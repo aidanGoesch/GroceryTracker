@@ -11,6 +11,7 @@ import { useGroceryList } from '../hooks/useGroceryList'
 import { useReceipts } from '../hooks/useReceipts'
 import { useWeeklySpend } from '../hooks/useWeeklySpend'
 import { supabase } from '../supabase'
+import { formatCurrency } from '../utils'
 
 function Home() {
   const { receipts, fetchReceipts, loading: receiptsLoading, error: receiptsError } = useReceipts()
@@ -79,6 +80,12 @@ function Home() {
 
   const screenError = receiptsError || weekError || categoryError || groceryError
   const recentReceipts = useMemo(() => receipts.slice(0, 3), [receipts])
+  const weeklyAverage = useMemo(() => {
+    const nonZeroWeeks = last8Weeks.filter((week) => Number(week.total || 0) > 0)
+    if (!nonZeroWeeks.length) return 0
+    const sum = nonZeroWeeks.reduce((total, week) => total + Number(week.total || 0), 0)
+    return sum / nonZeroWeeks.length
+  }, [last8Weeks])
   const homeGroceryItems = useMemo(() => {
     const byCreatedAt = groceryItems
       .filter((item) => !optimisticallyRemovedIds.includes(item.id))
@@ -189,6 +196,11 @@ function Home() {
       ) : (
         <WeekCard currentWeek={currentWeek} delta={delta} last8Weeks={last8Weeks} />
       )}
+
+      <section className="panel weekly-average-card">
+        <p className="mono-label">8-week average</p>
+        <p className="weekly-average-value">{formatCurrency(weeklyAverage)}</p>
+      </section>
 
       <section className="section-head">
         <h2>grocery list</h2>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { Navigate, Route, Routes, matchPath, useLocation } from 'react-router-dom'
 import Nav from './components/Nav'
@@ -24,19 +24,37 @@ function isCachedTabPath(pathname) {
   return CACHED_TAB_ROUTES.some(({ path }) => matchPath({ path, end: true }, pathname))
 }
 
+function CachedTabPane({ isActive, children }) {
+  const paneRef = useRef(null)
+
+  useEffect(() => {
+    if (isActive || typeof document === 'undefined') return
+    const activeElement = document.activeElement
+    if (
+      paneRef.current &&
+      activeElement instanceof HTMLElement &&
+      paneRef.current.contains(activeElement)
+    ) {
+      activeElement.blur()
+    }
+  }, [isActive])
+
+  return (
+    <div ref={paneRef} style={{ display: isActive ? 'block' : 'none' }} aria-hidden={!isActive}>
+      {children}
+    </div>
+  )
+}
+
 function CachedTabViews({ pathname }) {
   return (
     <>
       {CACHED_TAB_ROUTES.map((route) => {
         const isActive = Boolean(matchPath({ path: route.path, end: true }, pathname))
         return (
-          <div
-            key={route.path}
-            style={{ display: isActive ? 'block' : 'none' }}
-            aria-hidden={!isActive}
-          >
+          <CachedTabPane key={route.path} isActive={isActive}>
             <route.Component />
-          </div>
+          </CachedTabPane>
         )
       })}
     </>

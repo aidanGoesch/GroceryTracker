@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ErrorBanner from '../components/ErrorBanner'
 import SkeletonBlock from '../components/SkeletonBlock'
 import { useGroceryList } from '../hooks/useGroceryList'
@@ -14,6 +14,7 @@ function triggerHaptic(pattern = 12) {
 
 function GroceryList() {
   const location = useLocation()
+  const navigate = useNavigate()
   const {
     items,
     loading,
@@ -44,10 +45,18 @@ function GroceryList() {
   useEffect(() => {
     if (!location.state?.focusAdd) return
     const timer = setTimeout(() => {
-      addInputRef.current?.focus()
+      const input = addInputRef.current
+      if (input) {
+        try {
+          input.focus({ preventScroll: true })
+        } catch {
+          input.focus()
+        }
+      }
+      navigate(location.pathname, { replace: true, state: null })
     }, 20)
     return () => clearTimeout(timer)
-  }, [location.state])
+  }, [location.pathname, location.state, navigate])
 
   const itemNameSet = useMemo(
     () => new Set(items.map((item) => item.name.trim().toLowerCase())),
